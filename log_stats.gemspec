@@ -5,7 +5,7 @@ require 'log_stats/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "log_stats"
-  spec.version       = HerokuStats::VERSION
+  spec.version       = LogStats::VERSION
   spec.authors       = ["Peter Marklund"]
   spec.email         = ["peter@marklunds.com"]
 
