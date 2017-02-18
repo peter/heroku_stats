@@ -4,7 +4,7 @@ module HerokuStats
       {
         events: {
           requests: {
-            # NOTE: matches Heroku router lines. Also matches Papertrails slightly modified ones.
+            # NOTE: matches Heroku router lines. Also matches Papertrails slightly modified lines.
             line_pattern: /\s(heroku\/router)|(heroku\[router\]:)\s/,
             fields: [
               {
@@ -24,8 +24,32 @@ module HerokuStats
           }
         },
         verbose: true,
-        output: "text"
+        stats_format: "text"
       }
+    end
+
+    def self.env_config
+      default_config.keys.reduce({}) do |acc, key|
+        value = env_value(key)
+        if !value.nil?
+          acc[key] = value
+        end
+        acc
+      end
+    end
+
+    def self.env_value(key)
+      env_key = key.to_s.upcase
+      value = ENV[env_key]
+      if boolean?(default_config[key])
+        ['1', true, 'true', 't', 'TRUE'].include?(value)
+      else
+        value
+      end
+    end
+
+    def self.boolean?(value)
+      !!value == value
     end
   end
 end

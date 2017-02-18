@@ -4,5 +4,5 @@ require 'heroku_stats'
 require "heroku_stats/config"
 
 log_file_data = ARGF.read
-config = HerokuStats::Config.default_config
+config = HerokuStats::Config.default_config.merge(HerokuStats::Config.env_config)
 HerokuStats.run(log_file_data, config)

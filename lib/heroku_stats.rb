@@ -8,6 +8,17 @@ require "heroku_stats/requests/text_output"
 
 module HerokuStats
   def self.run(log_data, config)
+    data = get_data(log_data, config)
+    if config[:stats_format] == "text" && request_config = config[:events][:requests]
+      Requests::TextOutput.print(data[:requests], request_config)
+    end
+    if config[:stats_format] == "json"
+      puts JSON.generate(data)
+    end
+    data
+  end
+
+  def self.get_data(log_data, config)
     logger = Logger.new(config[:verbose])
     logger.info("\nParsing request lines...")
     data = LineParser.parse(log_data, config)
@@ -29,12 +40,7 @@ module HerokuStats
         requests_by_code: requests.group_by { |request| request[:code] },
         kpi: Requests::KPI.calculate(requests, stats)
       }
-
-      if config[:output] == "text"
-        Requests::TextOutput.print(result[:requests], requests_config)
-      elsif config[:output] == "json"
-        puts JSON.generate(result)
-      end
     end
+    result
   end
 end
