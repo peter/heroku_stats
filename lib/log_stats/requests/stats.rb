@@ -1,4 +1,4 @@
-module HerokuStats
+module LogStats
   module Requests
     module Stats
       def self.stats(requests, event_config)

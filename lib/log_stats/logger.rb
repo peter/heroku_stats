@@ -1,4 +1,4 @@
-module HerokuStats
+module LogStats
   class Logger
     def initialize(verbose)
       @verbose = verbose

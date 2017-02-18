@@ -1,4 +1,4 @@
-module HerokuStats
+module LogStats
   module Config
     def self.default_config
       {
@@ -41,7 +41,7 @@ module HerokuStats
     def self.env_value(key)
       env_key = key.to_s.upcase
       value = ENV[env_key]
-      if boolean?(default_config[key])
+      if !value.nil? && boolean?(default_config[key]) 
         ['1', true, 'true', 't', 'TRUE'].include?(value)
       else
         value

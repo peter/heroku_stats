@@ -1,17 +1,17 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'heroku_stats/version'
+require 'log_stats/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "heroku_stats"
+  spec.name          = "log_stats"
   spec.version       = HerokuStats::VERSION
   spec.authors       = ["Peter Marklund"]
   spec.email         = ["peter@marklunds.com"]
 
   spec.summary       = %q{Extract request statistics from Heroku logs}
   spec.description   = %q{}
-  spec.homepage      = "https://github.com/peter/heroku_stats"
+  spec.homepage      = "https://github.com/peter/log_stats"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'

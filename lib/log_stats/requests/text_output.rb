@@ -1,4 +1,4 @@
-module HerokuStats
+module LogStats
   module Requests
     module TextOutput
       def self.print(data, event_config)

@@ -1,4 +1,4 @@
-module HerokuStats
+module LogStats
   module Requests
     module KPI
       PRECISION = 5

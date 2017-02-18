@@ -1,12 +1,12 @@
 require "json"
-require "heroku_stats/version"
-require "heroku_stats/line_parser"
-require "heroku_stats/logger"
-require "heroku_stats/requests/stats"
-require "heroku_stats/requests/kpi"
-require "heroku_stats/requests/text_output"
+require "log_stats/version"
+require "log_stats/line_parser"
+require "log_stats/logger"
+require "log_stats/requests/stats"
+require "log_stats/requests/kpi"
+require "log_stats/requests/text_output"
 
-module HerokuStats
+module LogStats
   def self.run(log_data, config)
     data = get_data(log_data, config)
     if config[:stats_format] == "text" && request_config = config[:events][:requests]

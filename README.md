@@ -1,12 +1,13 @@
-# heroku_stats
+# Log Stats
 
-A rubygem for extracting response time and error stats based on the Heroku router logs. Example usage with Heroku addon papertrail:
+A rubygem for extracting response time and error stats based on log files such as
+the Heroku router log. Example usage with Heroku addon papertrail:
 
 ```
 gem install papertrail
 PAPERTRAIL_API_TOKEN=... papertrail --min-time "yesterday 22:00" --max-time "yesterday 22:30" > tmp/papertrail.log
-gem install heroku_stats
-heroku_stats /tmp/papertrail.log
+gem install log_stats
+log_stats /tmp/papertrail.log
 ```
 
 To download longer timeperiods, like a whole day, download and gunzip a Papertrail log archive file.

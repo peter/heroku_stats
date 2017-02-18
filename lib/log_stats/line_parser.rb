@@ -1,4 +1,4 @@
-module HerokuStats
+module LogStats
   module LineParser
     def self.parse(log_data, config)
       data = {}

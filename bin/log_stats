@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require 'log_stats'
+require "log_stats/config"
+
+log_file_data = ARGF.read
+config = LogStats::Config.default_config.merge(LogStats::Config.env_config)
+LogStats.run(log_file_data, config)
