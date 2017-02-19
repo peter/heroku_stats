@@ -31,6 +31,7 @@ module LogStats
       acc[event_name] = {
         count: events[event_name].size,
         fields: Stats.fields(events[event_name], config[:events][event_name]),
+        group_by: Stats.group_by(events[event_name], config[:events][event_name]),
         events: events[event_name]
       }
       acc

@@ -1,13 +1,15 @@
 #!/usr/bin/env ruby
 
-# This example log stats script shows custom parsing of API requests
-# from a log file.
+#############################################################################
+# This example script shows custom parsing of API requests from a log file.
+#############################################################################
 
 $:.unshift(File.dirname(__FILE__) + '/../lib')
 
 require 'log_stats'
 require "log_stats/config"
 require "json"
+require "uri"
 
 parse_time = Proc.new { |line| line[/\b20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/] }
 custom_config = {
@@ -18,9 +20,17 @@ custom_config = {
       fields: [
         {name: :time, parse: parse_time},
         {name: :url},
-        {name: :method, enum: true},
+        {name: :method},
         {name: :response_time, numeric: true}
-      ]
+      ],
+      group_by: {
+        hostname: {
+          id: Proc.new { |api_call| URI(api_call[:url]).host }
+        },
+        method: {
+          id: Proc.new { |api_call| URI(api_call[:method]) }
+        }
+      }
     }
   }),
   verbose: false
@@ -32,4 +42,4 @@ config = LogStats::Config.default_config.
 log_file_data = ARGF.read
 data = LogStats.get_data(log_file_data, config)
 data[:requests] = data[:requests][:kpi] # Only output KPI from requests data
-puts JSON.generate(data)
+puts JSON.pretty_generate(data)

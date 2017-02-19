@@ -4,9 +4,14 @@ module LogStats
       event_config[:fields].reduce({}) do |acc, field|
         if field[:numeric]
           acc[field[:name]] = field_stats_numeric(events, field)
-        elsif field[:enum]
-          acc[field[:name]] = field_stats_enum(events, field)
         end
+        acc
+      end
+    end
+
+    def self.group_by(events, event_config)
+      event_config[:group_by].reduce({}) do |acc, (name, group_by)|
+        acc[name] = group_by_stats(events, group_by, event_config)
         acc
       end
     end
@@ -27,12 +32,17 @@ module LogStats
       }
     end
 
-    def self.field_stats_enum(events, field)
+    def self.group_by_stats(events, group_by, event_config)
       total_count = events.size
-      events_by_field = events.group_by { |event| event[field[:name]] }.select { |key, _| !key.nil? }
-      events_by_field.reduce({}) do |acc, (key, group_events)|
-        percent = (group_events.size.to_f*100/total_count).round(4)
-        acc[key] = percent
+      events_by_group = events.group_by { |event| group_by[:id].call(event) }.select { |key, _| !key.nil? }
+      events_by_group.reduce({}) do |acc, (key, group_events)|
+        group_count = group_events.size
+        percent = (group_count.to_f*100/total_count).round(4)
+        acc[key] = {
+          count: group_count,
+          percent: percent,
+          fields: fields(group_events, event_config)
+        }
         acc
       end
     end
