@@ -23,8 +23,8 @@ module LogStats
             apdex_goal: 0.9,
           }
         },
-        verbose: true,
-        stats_format: "text"
+        output_format: "text",
+        verbose: true
       }
     end
 
@@ -41,7 +41,7 @@ module LogStats
     def self.env_value(key)
       env_key = key.to_s.upcase
       value = ENV[env_key]
-      if !value.nil? && boolean?(default_config[key]) 
+      if !value.nil? && boolean?(default_config[key])
         ['1', true, 'true', 't', 'TRUE'].include?(value)
       else
         value

@@ -1,11 +1,7 @@
 module LogStats
   class Logger
-    def initialize(verbose)
-      @verbose = verbose
-    end
-
-    def info(message)
-      puts(message) if @verbose
+    def self.info(config, message)
+      puts(message) if config[:verbose]
     end
   end
 end

@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+# This example log stats script shows custom parsing of API requests
+# from a log file.
+
+$:.unshift(File.dirname(__FILE__) + '/../lib')
+
+require 'log_stats'
+require "log_stats/config"
+require "json"
+
+parse_time = Proc.new { |line| line[/\b20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/] }
+custom_config = {
+  events: LogStats::Config.default_config[:events].merge({
+    api_calls: {
+      # 2017-02-19T06:21:25.522274+00:00 app[worker.2]: [WARN] [Vac::Request] Slow response time for url=http://sumore02.cmore.dk/api/tve_web/search/categories/160145/assets/ method=get status=304 size= response_time=141
+      line_pattern: /\s\[Vac::Request\] Slow response time\s/,
+      fields: [
+        {name: :time, parse: parse_time},
+        {name: :url},
+        {name: :method, enum: true},
+        {name: :response_time, numeric: true}
+      ]
+    }
+  }),
+  verbose: false
+}
+config = LogStats::Config.default_config.
+          merge(custom_config).
+          merge(LogStats::Config.env_config)
+
+log_file_data = ARGF.read
+data = LogStats.get_data(log_file_data, config)
+data[:requests] = data[:requests][:kpi] # Only output KPI from requests data
+puts JSON.generate(data)
