@@ -18,18 +18,29 @@ module LogStats
 
     def self.field_stats_numeric(events, field)
       sorted_events = events.sort_by { |event| event[field[:name]] }
-      percentile_levels = (5..95).step(5).map { |n| n/100.0 }
+      percentile_levels = (5..95).step(5).map { |n| n/100.0 } + [0.99, 0.999]
       percentiles = percentile_levels.reduce({}) do |acc, level|
         acc[level] = percentile(sorted_events, field[:name], level)
         acc
       end
-      {
+      result = {
         min: sorted_events[0][field[:name]],
         max: sorted_events[-1][field[:name]],
         avg: avg(events, field[:name]),
         median: percentile(sorted_events, field[:name], 0.5),
         percentiles: percentiles
       }
+      if field[:events]
+        events_options = (field[:events].is_a?(Hash) ? field[:events] : {})
+        events_limit = events_options[:limit] || 100
+        result[:events] = if events_options[:sort] == "asc"
+                            sorted_events[0, events_limit]
+                          else
+                            events_start_index = [0, sorted_events.size-events_limit].max
+                            sorted_events[events_start_index..-1].reverse
+                          end
+      end
+      result
     end
 
     def self.group_by_stats(events, group_by, event_config)

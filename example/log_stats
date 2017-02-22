@@ -21,7 +21,7 @@ custom_config = {
         {name: :time, parse: parse_time},
         {name: :url},
         {name: :method},
-        {name: :response_time, numeric: true}
+        {name: :response_time, numeric: true, events: true}
       ],
       group_by: {
         hostname: {
