@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Download papertrail log files. Usage:
+#
+# PAPERTRAIL_API_TOKEN=... examples/papertrail_download 2017-02-10
+
+date=${1:-`date -v -1d "+%Y-%m-%d"`} # would be --date "1 day ago" on Linux
+
+file=/tmp/papertrail-$date.tsv.gz
+url=https://papertrailapp.com/api/v1/archives/$date/download
+
+echo "Downloading $url to $file..."
+
+curl -silent --no-include -o $file -L -H "X-Papertrail-Token: $PAPERTRAIL_API_TOKEN" $url
+gunzip $file
