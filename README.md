@@ -14,7 +14,7 @@ To download longer timeperiods, like a whole day, download and gunzip a Papertra
 see [examples/papertrail_download](examples/papertrail_download).
 
 You can extract not only web requests but any events you are interested in from your logs.
-Here is the API call stats output from the [examples/log_stats] script:
+Here is the API call stats output from the [examples/log_stats](examples/log_stats) script:
 
 ```
 "requests": {
