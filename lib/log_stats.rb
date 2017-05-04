@@ -32,8 +32,9 @@ module LogStats
         count: events[event_name].size,
         fields: Stats.fields(events[event_name], config[:events][event_name]),
         group_by: Stats.group_by(events[event_name], config[:events][event_name]),
-        events: events[event_name]
       }
+      # NOTE: the full events list can get very large so don't include it by default
+      acc[event_name][:events] = events[event_name] if config[:events][event_name][:events]
       acc
     end
     result.merge(other_result)
@@ -48,13 +49,20 @@ module LogStats
 
     Logger.info(config, "\nCalculating request stats...")
     stats = Requests::Stats.stats(requests, requests_config)
-    {
+    kpi = Requests::KPI.calculate(requests, stats)
+    requests_by_status = requests.group_by { |request| request[:status] }
+    kpi_by_status = requests_by_status.reduce({}) do |acc, (status, requests)|
+      acc[status] = Requests::KPI.calculate(requests,
+                                            Requests::Stats.stats(requests, requests_config))
+      acc
+    end
+    result = {
       requests_count: requests_count,
-      requests: requests,
-      stats: stats,
-      requests_by_status: requests.group_by { |request| request[:status] },
-      requests_by_code: requests.group_by { |request| request[:code] },
-      kpi: Requests::KPI.calculate(requests, stats)
+      kpi: kpi,
+      kpi_by_status: kpi_by_status
     }
+    # NOTE: stats is one entry per request path and can get very large so don't include it by default
+    result[:stats] = stats if requests_config[:events]
+    result
   end
 end
