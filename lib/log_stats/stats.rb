@@ -32,7 +32,7 @@ module LogStats
       }
       if field[:events]
         events_options = (field[:events].is_a?(Hash) ? field[:events] : {})
-        events_limit = events_options[:limit] || 100
+        events_limit = events_options[:limit] || 10
         result[:events] = if events_options[:sort] == "asc"
                             sorted_events[0, events_limit]
                           else
