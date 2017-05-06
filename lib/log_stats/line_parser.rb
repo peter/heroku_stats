@@ -2,7 +2,8 @@ module LogStats
   module LineParser
     def self.parse(log_data, config)
       data = {}
-      log_data.split("\n").each do |line_string|
+      lines = (log_data.is_a?(String) ? log_data.split("\n") : log_data)
+      lines.each do |line_string|
         config[:events].each do |event, event_config|
           if event_config[:line_pattern] =~ line_string
             data[event] ||= []

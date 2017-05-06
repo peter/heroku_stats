@@ -1,4 +1,5 @@
 require "json"
+require "log_stats/logger"
 require "log_stats/version"
 require "log_stats/line_parser"
 require "log_stats/logger"
@@ -14,14 +15,15 @@ module LogStats
       Requests::TextOutput.print(data[:requests], request_config)
     end
     if config[:output_format] == "json"
-      puts JSON.generate(data)
+      puts JSON.pretty_generate(data)
     end
     data
   end
 
   def self.get_data(log_data, config)
-    Logger.info(config, "\nParsing log lines...")
-    events = LineParser.parse(log_data, config)
+    events = Logger.elapsed(config, "\nParsing #{log_data.length} log lines") do
+      LineParser.parse(log_data, config)
+    end
     result = {}
     if requests = events[:requests]
       result[:requests] = get_requests_data(requests, config)
