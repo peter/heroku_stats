@@ -58,13 +58,28 @@ module LogStats
                                             Requests::Stats.stats(requests, requests_config))
       acc
     end
+    limit = requests_config[:limit] || 500
+    requests_4xx = requests_by_status.reduce({}) do |acc, (status, requests)|
+      if status / 100 == 4
+        acc[status] = requests.first(limit)
+      end
+      acc
+    end
+    requests_5xx = requests_by_status.reduce({}) do |acc, (status, requests)|
+      if status / 100 == 5
+        acc[status] = requests.first(limit)
+      end
+      acc
+    end
     result = {
       requests_count: requests_count,
       kpi: kpi,
-      kpi_by_status: kpi_by_status
+      kpi_by_status: kpi_by_status,
+      requests_4xx: requests_4xx.first(limit),
+      requests_5xx: requests_5xx.first(limit)
     }
     # NOTE: stats is one entry per request path and can get very large so don't include it by default
-    result[:stats] = stats if requests_config[:events]
+    result[:stats] = stats if requests_config[:stats]
     result
   end
 end
