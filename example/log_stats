@@ -11,6 +11,36 @@ require "uri"
 
 parse_time = Proc.new { |line| line[/\b20\d\d-\d\d-\d\dT\d\d:\d\d:\d\d/] }
 
+def endpoint_pattern(url)
+  Regexp.new('^' + url.gsub(%r{/:id/}, '/[^/]+/').gsub(%r{/:id$}, '/[^/]+') + '$')
+end
+
+ENDPOINTS = [
+  'restapi.example.(se|no|dk)/api/user/:id/password',
+  'restapi.example.(se|no|dk)/api/user/:id/password',
+  'restapi.example.(se|no|dk)/api/user/find/(userName|email)/:id',
+  'restapi.example.(se|no|dk)/api/order/extUserId/:id',
+  'restapi.example.(se|no|dk)/api/voucher/.+'
+].map do |url|
+  {url: url, pattern: endpoint_pattern(url)}
+end
+
+def endpoint(api_call)
+  uri = URI(api_call[:url])
+  # NOTE: don't include digits in the path as then we will have too many unique paths
+  path_without_digits = uri.path.gsub(%r{/\d+}, '/:id')
+  url = uri.host + path_without_digits
+  if endpoint = ENDPOINTS.detect { |endpoint| endpoint[:pattern].match(url) }
+    endpoint[:url]
+  else
+    url
+  end
+end
+
+def response_time_95(item)
+  -1 * item[:fields][:response_time][:percentiles][0.95]
+end
+
 custom_config = {
   events: {
     requests: {
@@ -31,7 +61,7 @@ custom_config = {
       stats: false # Skip listing stats per request path to keep output size manageable
     },
     api_calls: {
-      # 2017-02-19T06:21:25.522274+00:00 app[worker.2]: [WARN] [Vac::Request] Slow response time for url=http://sumore02.cmore.dk/api/tve_web/search/categories/160145/assets/ method=get status=304 size= response_time=141
+      # 2017-02-19T06:21:25.522274+00:00 app[worker.2]: [WARN] [Vac::Request] Slow response time for url=http://sumore02.example.dk/api/search/categories/160145/assets/ method=get status=304 size= response_time=141
       line_pattern: /\s\[Vac::Request\] Slow response time\s/,
       fields: [
         {name: :time, parse: parse_time},
@@ -41,7 +71,12 @@ custom_config = {
       ],
       group_by: {
         hostname: {
-          id: Proc.new { |api_call| URI(api_call[:url]).host }
+          id: Proc.new { |api_call| URI(api_call[:url]).host },
+          sort_by: method(:response_time_95)
+        },
+        endpoint: {
+          id: method(:endpoint),
+          sort_by: method(:response_time_95)
         }
         # NOTE: Grouping by HTTP method doesn't really add much at the moment, so commenting out for now
         # method: {

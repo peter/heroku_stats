@@ -46,7 +46,7 @@ module LogStats
     def self.group_by_stats(events, group_by, event_config)
       total_count = events.size
       events_by_group = events.group_by { |event| group_by[:id].call(event) }.select { |key, _| !key.nil? }
-      events_by_group.reduce({}) do |acc, (key, group_events)|
+      grouped = events_by_group.reduce({}) do |acc, (key, group_events)|
         group_count = group_events.size
         percent = (group_count.to_f*100/total_count).round(4)
         acc[key] = {
@@ -56,6 +56,12 @@ module LogStats
         }
         acc
       end
+      keys = if sort_by = group_by[:sort_by]
+               grouped.keys.sort_by { |key| sort_by.call(grouped[key]) }
+             else
+               grouped.keys
+             end
+      keys.map { |key| {key: key, data: grouped[key]} }
     end
 
     def self.avg(events, field_name)
