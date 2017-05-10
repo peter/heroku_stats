@@ -101,7 +101,7 @@ stats_path = File.join(dir_path, 'stats.json')
 if File.exists?(events_path)
   # NOTE: it's faster to read cached JSON events data than processing the log file
   events = LogStats::Logger.elapsed(config, "Reading and parsing #{events_path}") do
-    JSON.parse(IO.read(events_path))
+    JSON.parse(IO.read(events_path), symbolize_names: true)
   end
 else
   log_file_data = LogStats::Logger.elapsed(config, "Reading log file #{file_path}") do

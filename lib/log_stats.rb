@@ -10,17 +10,6 @@ require "log_stats/requests/text_output"
 require "time"
 
 module LogStats
-  def self.run(log_data, config)
-    stats = get_stats(log_data, config)
-    if config[:output_format] == "text" && request_config = config[:events][:requests]
-      Requests::TextOutput.print(stats[:requests], request_config)
-    end
-    if config[:output_format] == "json"
-      puts JSON.pretty_generate(stats)
-    end
-    stats
-  end
-
   def self.get_stats(log_data, config)
     events = get_events(log_data, config)
     process_events(events, config)

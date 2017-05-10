@@ -5,4 +5,5 @@ require "log_stats/config"
 
 log_file_data = ARGF.readlines
 config = LogStats::Config.default_config.merge(LogStats::Config.env_config)
-LogStats.run(log_file_data, config)
+stats = LogStats.get_stats(log_file_data, config)
+puts JSON.pretty_generate(stats)
