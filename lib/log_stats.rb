@@ -7,6 +7,7 @@ require "log_stats/stats"
 require "log_stats/requests/stats"
 require "log_stats/requests/kpi"
 require "log_stats/requests/text_output"
+require "time"
 
 module LogStats
   def self.run(log_data, config)
@@ -23,6 +24,18 @@ module LogStats
   def self.get_data(log_data, config)
     events = Logger.elapsed(config, "\nParsing #{log_data.length} log lines") do
       LineParser.parse(log_data, config)
+    end
+    if config[:start_time] || config[:end_time]
+      events = Logger.elapsed(config, "\nFiltering by start_time/end_time") do
+        events.keys.reduce({}) do |acc, key|
+          acc[key] = events[key].select do |event|
+            event_time = Time.parse(event[:time])
+            (config[:start_time].nil? || config[:start_time] < event_time) &&
+            (config[:end_time].nil? || config[:end_time] > event_time)
+          end
+          acc
+        end
+      end
     end
     result = {}
     if requests = events[:requests]
