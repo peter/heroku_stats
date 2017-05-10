@@ -11,20 +11,28 @@ require "time"
 
 module LogStats
   def self.run(log_data, config)
-    data = get_data(log_data, config)
+    stats = get_stats(log_data, config)
     if config[:output_format] == "text" && request_config = config[:events][:requests]
-      Requests::TextOutput.print(data[:requests], request_config)
+      Requests::TextOutput.print(stats[:requests], request_config)
     end
     if config[:output_format] == "json"
-      puts JSON.pretty_generate(data)
+      puts JSON.pretty_generate(stats)
     end
-    data
+    stats
   end
 
-  def self.get_data(log_data, config)
-    events = Logger.elapsed(config, "\nParsing #{log_data.length} log lines") do
+  def self.get_stats(log_data, config)
+    events = get_events(log_data, config)
+    process_events(events, config)
+  end
+
+  def self.get_events(log_data, config)
+    Logger.elapsed(config, "\nParsing #{log_data.length} log lines") do
       LineParser.parse(log_data, config)
     end
+  end
+
+  def self.process_events(events, config)
     if config[:start_time] || config[:end_time]
       events = Logger.elapsed(config, "\nFiltering by start_time/end_time") do
         events.keys.reduce({}) do |acc, key|

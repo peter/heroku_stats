@@ -93,6 +93,29 @@ config = LogStats::Config.default_config.
           merge(custom_config).
           merge(LogStats::Config.env_config)
 
-log_file_data = LogStats::Logger.elapsed(config, "Reading file") { ARGF.readlines }
-data = LogStats.get_data(log_file_data, config)
-puts JSON.pretty_generate(data)
+file_path = ARGV[0]
+dir_path = file_path[/^.+(?=\.[^.]+$)/] # File path minus extension
+events_path = File.join(dir_path, 'events.json')
+stats_path = File.join(dir_path, 'stats.json')
+
+if File.exists?(events_path)
+  # NOTE: it's faster to read cached JSON events data than processing the log file
+  events = LogStats::Logger.elapsed(config, "Reading and parsing #{events_path}") do
+    JSON.parse(IO.read("events.json"))
+  end
+else
+  log_file_data = LogStats::Logger.elapsed(config, "Reading log file #{file_path}") do
+    IO.readlines(file_path)
+  end
+  events = LogStats.get_events(log_file_data, config)
+  LogStats::Logger.elapsed(config, "Writing #{events_path}") do
+    Dir.mkdir(dir_path) if !File.exists?(dir_path)
+    File.write(events_path, JSON.pretty_generate(events))
+  end
+end
+
+stats = LogStats.process_events(events, config)
+
+LogStats::Logger.elapsed(config, "Writing stats output to #{stats_path}") do
+  File.write(stats_path, JSON.pretty_generate(stats))
+end
